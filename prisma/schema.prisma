@@ -1,0 +1,507 @@
+// ATLAS Commerce OS — Prisma schema
+// DB: PostgreSQL (Supabase). Run `npx prisma migrate dev --name init` after setting DATABASE_URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL") // needed for Supabase pooled connections
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CARD
+  UPI
+  NETBANKING
+  COD
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  phone         String?
+  passwordHash  String
+  role          Role      @default(CUSTOMER)
+  roleId        String?
+  userRole      UserRole? @relation(fields: [roleId], references: [id])
+  emailVerified Boolean   @default(false)
+  avatarUrl     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  addresses     Address[]
+  orders        Order[]
+  reviews       Review[]
+  wishlist      WishlistItem[]
+  cartItems     CartItem[]
+  refreshTokens RefreshToken[]
+  customerProfile CustomerProfile?
+  wallet        Wallet?
+  supportTickets SupportTicket[]
+
+  @@index([email])
+  @@index([roleId])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  revoked   Boolean  @default(false)
+
+  @@index([userId])
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label     String   @default("Home")
+  fullName  String
+  phone     String
+  line1     String
+  city      String
+  state     String
+  pin       String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Brand {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  slug     String    @unique
+  logoUrl  String?
+  products Product[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  slug     String    @unique
+  imageUrl String?
+  products Product[]
+}
+
+/// Singleton row (always id = "main") — drives the homepage hero banner,
+/// announcement bar, and CTA button text. Editable from /admin → Settings,
+/// no developer needed to change copy or swap the hero image.
+model SiteSettings {
+  id                   String   @id @default("main")
+  siteName             String   @default("ATLAS")
+  announcementEnabled  Boolean  @default(true)
+  announcementText     String   @default("Free shipping on orders above ₹999 · New Collection Now Live")
+  heroBadgeText        String   @default("Commerce, Redefined")
+  heroHeadingLine1     String   @default("Commerce.")
+  heroHeadingLine2     String   @default("Elevated.")
+  heroSubtitle         String   @default("The platform for brands that refuse to compromise. Curated collections, authentic craftsmanship, delivered with precision.")
+  heroImageUrl         String   @default("https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=900&h=1080&fit=crop&auto=format")
+  heroCtaPrimaryText   String   @default("Explore Collection")
+  heroCtaSecondaryText String   @default("Watch Film")
+  footerText           String   @default("© ATLAS. All rights reserved.")
+  updatedAt            DateTime @updatedAt
+}
+
+model Product {
+  id             String    @id @default(cuid())
+  name           String
+  slug           String    @unique
+  description    String    @db.Text
+  price          Int // store in paise/smallest unit to avoid float errors
+  originalPrice  Int?
+  sku            String    @unique
+  stock          Int       @default(0)
+  badge          String?
+  rating         Float     @default(0)
+  reviewCount    Int       @default(0)
+  isActive       Boolean   @default(true)
+  specs          Json?     // arbitrary admin-defined key/value specs, e.g. {"Material":"Stainless Steel","Warranty":"2 Years"}
+  metaTitle      String?
+  metaDescription String?
+  brandId        String?
+  brand          Brand?    @relation(fields: [brandId], references: [id])
+  categoryId     String?
+  category       Category? @relation(fields: [categoryId], references: [id])
+  images         ProductImage[]
+  variants       ProductVariant[]
+  reviews        Review[]
+  orderItems     OrderItem[]
+  cartItems      CartItem[]
+  wishlistedBy   WishlistItem[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([brandId])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  altText   String?
+  position  Int     @default(0)
+}
+
+model ProductVariant {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String  // e.g. "Silver / Standard"
+  priceDiff Int     @default(0)
+  stock     Int     @default(0)
+  sku       String  @unique
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant   String?
+  qty       Int      @default(1)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId, variant])
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  items           OrderItem[]
+  subtotal        Int
+  discount        Int           @default(0)
+  shippingFee     Int           @default(0)
+  total           Int
+  status          OrderStatus   @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentMethod   PaymentMethod
+  razorpayOrderId String?
+  razorpayPaymentId String?
+  couponCode      String?
+  shippingName    String
+  shippingPhone   String
+  shippingAddress String
+  shippingCity    String
+  shippingState   String
+  shippingPin     String
+  deliveryMethod  String        @default("standard")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([razorpayOrderId])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  variant   String?
+  price     Int
+  qty       Int
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  rating     Int
+  text       String   @db.Text
+  isVerified Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([productId])
+}
+
+model Coupon {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  discountType  String   @default("FLAT") // FLAT | PERCENT
+  discountValue Int
+  minOrderValue Int      @default(0)
+  maxUses       Int      @default(0) // 0 = unlimited
+  usedCount     Int      @default(0)
+  expiresAt     DateTime?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model UserRole {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  permissions String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  userName    String?
+  action      String
+  entityType  String
+  entityId    String
+  oldValue    Json?
+  newValue    Json?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model FeatureFlag {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  description String?
+  isEnabled   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Setting {
+  id          String   @id @default(cuid())
+  namespace   String
+  key         String
+  value       Json
+  description String?
+  updatedBy   String?
+  updatedAt   DateTime @updatedAt
+
+  @@unique([namespace, key])
+  @@index([namespace])
+}
+
+model CmsPage {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  content         Json
+  status          String   @default("DRAFT") // DRAFT | PUBLISHED | SCHEDULED | ARCHIVED
+  scheduledStart  DateTime?
+  scheduledEnd    DateTime?
+  metaTitle       String?
+  metaDescription String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  versions        CmsPageVersion[]
+}
+
+model CmsPageVersion {
+  id            String   @id @default(cuid())
+  cmsPageId     String
+  cmsPage       CmsPage  @relation(fields: [cmsPageId], references: [id], onDelete: Cascade)
+  version       Int
+  content       Json
+  title         String
+  createdByName String
+  createdAt     DateTime @default(now())
+}
+
+model ThemeSettings {
+  id             String   @id @default("active")
+  name           String   @default("Default Theme")
+  colors         Json
+  typography     Json
+  layout         Json
+  branding       Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  versions       ThemeSettingsVersion[]
+}
+
+model ThemeSettingsVersion {
+  id             String   @id @default(cuid())
+  themeId        String
+  theme          ThemeSettings @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  version        Int
+  colors         Json
+  typography     Json
+  layout         Json
+  branding       Json
+  createdByName  String
+  createdAt      DateTime @default(now())
+}
+
+model MediaAsset {
+  id        String   @id @default(cuid())
+  name      String
+  url       String
+  mimeType  String
+  size      Int
+  folder    String   @default("/")
+  tags      String[]
+  checksum  String?
+  createdAt DateTime @default(now())
+}
+
+model NavigationMenu {
+  id        String   @id @default(cuid())
+  name      String
+  handle    String   @unique
+  items     Json
+  updatedAt DateTime @updatedAt
+}
+
+model SeoRedirect {
+  id         String   @id @default(cuid())
+  sourcePath String   @unique
+  targetPath String
+  statusCode Int      @default(301)
+  createdAt  DateTime @default(now())
+}
+
+model CustomerProfile {
+  userId    String   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes     String?
+  tags      String[]
+  segments  String[]
+  updatedAt DateTime @updatedAt
+}
+
+model Wallet {
+  id            String              @id // Matches User.id
+  user          User                @relation(fields: [id], references: [id], onDelete: Cascade)
+  balance       Float               @default(0.0)
+  storeCredits  Float               @default(0.0)
+  loyaltyPoints Int                 @default(0)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  transactions  WalletTransaction[]
+}
+
+model WalletTransaction {
+  id          String   @id @default(cuid())
+  walletId    String
+  wallet      Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  amount      Float    @default(0.0)
+  points      Int      @default(0)
+  type        String   // CREDIT | DEBIT
+  description String
+  createdAt   DateTime @default(now())
+}
+
+model SupportTicket {
+  id          String          @id @default(cuid())
+  ticketId    String          @unique // e.g. #TIC-102
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject     String
+  description String
+  status      String          @default("OPEN") // OPEN | IN_PROGRESS | RESOLVED | CLOSED
+  priority    String          @default("MEDIUM") // LOW | MEDIUM | HIGH | URGENT
+  assignedTo  String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  messages    TicketMessage[]
+}
+
+model TicketMessage {
+  id         String        @id @default(cuid())
+  ticketId   String
+  ticket     SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  senderId   String
+  senderName String
+  message    String
+  isInternal Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+}
+
+model OrderTimelineEvent {
+  id          String   @id @default(cuid())
+  orderId     String
+  type        String   // PLACED | PAID | FULFILLED | CANCELLED | REFUNDED | NOTE
+  description String
+  payload     Json?
+  createdAt   DateTime @default(now())
+}
+
+model AnalyticsMetric {
+  id         String   @id @default(cuid())
+  name       String
+  value      Float
+  dimensions Json?
+  timestamp  DateTime @default(now())
+}
+
+model DashboardWidget {
+  id        String   @id @default(cuid())
+  userId    String   @default("admin")
+  name      String
+  type      String
+  w         Int      @default(3)
+  h         Int      @default(2)
+  x         Int      @default(0)
+  y         Int      @default(0)
+  config    Json?
+  createdAt DateTime @default(now())
+}
+
+model FunnelStageMetric {
+  id         String   @id @default(cuid())
+  stageName  String
+  count      Int      @default(0)
+  timestamp  DateTime @default(now())
+}
