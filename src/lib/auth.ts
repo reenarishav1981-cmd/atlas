@@ -1,5 +1,4 @@
 import { SignJWT, jwtVerify } from "jose";
-import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 
@@ -17,10 +16,12 @@ const ACCESS_TTL = "15m";
 const REFRESH_TTL_DAYS = 30;
 
 export async function hashPassword(plain: string) {
+  const bcrypt = require("bcryptjs");
   return bcrypt.hash(plain, 12);
 }
 
 export async function verifyPassword(plain: string, hash: string) {
+  const bcrypt = require("bcryptjs");
   return bcrypt.compare(plain, hash);
 }
 
