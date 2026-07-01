@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
+import BlockRenderer from "@/components/BlockRenderer";
 
 interface Product {
   id: string;
@@ -86,6 +87,7 @@ export default function HomePageClient({
   initialCategories,
   currentUser,
   siteSettings,
+  initialBlocks = [],
 }: {
   initialProducts: Product[];
   initialCategories: Category[];
@@ -101,6 +103,7 @@ export default function HomePageClient({
     heroCtaPrimaryText: string;
     heroCtaSecondaryText: string;
   } | null;
+  initialBlocks?: any[];
 }) {
   // Falls back to the original hardcoded copy if Settings hasn't been saved yet —
   // admin can override every line of this from /admin → Settings, no code change needed.
@@ -215,6 +218,15 @@ export default function HomePageClient({
       toast.error("Something went wrong. Please try again.");
     }
   };
+
+  if (initialBlocks && initialBlocks.length > 0) {
+    return (
+      <div className="min-h-screen bg-[#FAFAF9]">
+        <Navbar cartCount={cartCount} />
+        <BlockRenderer blocks={initialBlocks} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FAFAF9]">

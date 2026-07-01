@@ -42,7 +42,22 @@ export default async function HomePage() {
   const user = await getCurrentUser();
   const settings = await getSiteSettings();
 
+  // Load published homepage blocks from Postgres
+  const cmsPage = await db.cmsPage.findUnique({
+    where: { slug: "home" },
+  });
+
+  const initialBlocks = cmsPage?.status === "PUBLISHED" && Array.isArray(cmsPage.content)
+    ? cmsPage.content
+    : [];
+
   return (
-    <HomePageClient initialProducts={products as any} initialCategories={transformedCategories} currentUser={user as any} siteSettings={settings as any} />
+    <HomePageClient
+      initialProducts={products as any}
+      initialCategories={transformedCategories}
+      currentUser={user as any}
+      siteSettings={settings as any}
+      initialBlocks={initialBlocks as any}
+    />
   );
 }

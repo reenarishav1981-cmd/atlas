@@ -208,6 +208,38 @@ export default function VisualBuilder() {
     }
   }, []);
 
+  // Load initial page blocks from database on mount
+  useEffect(() => {
+    async function loadCMSData() {
+      try {
+        const res = await fetch("/api/admin/cms?slug=home");
+        const data = await res.json();
+        if (data.page && data.page.content) {
+          const loadedBlocks = data.page.content as BlockInstance[];
+          if (loadedBlocks.length > 0) {
+            setBlocks(loadedBlocks);
+            setHistory([loadedBlocks]);
+            setHistoryIndex(0);
+          }
+          if (data.page.versions && data.page.versions.length > 0) {
+            const historyLogs = data.page.versions.map((v: any) => ({
+              version: v.version,
+              status: "PUBLISHED",
+              notes: v.title,
+              blocks: v.content,
+              updatedBy: v.createdByName,
+              timestamp: new Date(v.createdAt).toLocaleString(),
+            }));
+            setPublishHistory(historyLogs);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load CMS data from DB:", err);
+      }
+    }
+    loadCMSData();
+  }, []);
+
   // Developer APIs & Analytics hooks
   useEffect(() => {
     (window as any).TitanBuilderAPI = {
@@ -527,19 +559,46 @@ export default function VisualBuilder() {
     recordHistory(updated);
   };
 
-  const handlePublishPage = () => {
+  const handlePublishPage = async () => {
+    setIsSaving(true);
     const nextVer = publishHistory.length + 1;
-    const newLog: VersionLog = {
-      version: nextVer,
-      status: pageStatus,
-      notes: publishNote || `Published layout iteration ${nextVer}`,
-      blocks: [...blocks],
-      updatedBy: "System Developer",
-      timestamp: new Date().toLocaleString()
-    };
-    setPublishHistory([newLog, ...publishHistory]);
-    setPageStatus("PUBLISHED");
-    setPublishNote("");
+    const notes = publishNote || `Published layout iteration ${nextVer}`;
+    
+    try {
+      const res = await fetch("/api/admin/cms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: "Homepage Layout",
+          slug: "home",
+          content: blocks,
+          status: "PUBLISHED",
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+
+      const newLog: VersionLog = {
+        version: nextVer,
+        status: "PUBLISHED",
+        notes,
+        blocks: [...blocks],
+        updatedBy: "Admin Builder",
+        timestamp: new Date().toLocaleString()
+      };
+      setPublishHistory([newLog, ...publishHistory]);
+      setPageStatus("PUBLISHED");
+      setPublishNote("");
+      setIsDirty(false);
+      alert("✓ Layout published successfully to database!");
+    } catch (err: any) {
+      console.error("Failed to publish page to database:", err);
+      alert(`Error publishing layout: ${err.message || "Unknown error"}`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleRollbackVersion = (log: VersionLog) => {
