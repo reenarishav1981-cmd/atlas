@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { registerSchema, safeParse } from "@/lib/validations";
 import {
-  hashPassword,
   signAccessToken,
   signRefreshToken,
   cookieOptions,
   ACCESS_COOKIE,
   REFRESH_COOKIE,
 } from "@/lib/auth";
+import { hashPassword } from "@/lib/password";
 import { rateLimit, getClientIp } from "@/lib/rateLimit";
 import { sendWelcomeEmail } from "@/lib/email";
 

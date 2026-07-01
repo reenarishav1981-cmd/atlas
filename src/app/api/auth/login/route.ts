@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { loginSchema, safeParse } from "@/lib/validations";
 import {
-  verifyPassword,
   signAccessToken,
   signRefreshToken,
   cookieOptions,
   ACCESS_COOKIE,
   REFRESH_COOKIE,
 } from "@/lib/auth";
+import { verifyPassword } from "@/lib/password";
 import { rateLimit, getClientIp } from "@/lib/rateLimit";
 
 export async function POST(req: NextRequest) {
