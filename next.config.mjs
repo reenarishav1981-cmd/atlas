@@ -27,6 +27,15 @@ const nextConfig = {
       },
     ];
   },
+
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "https://atlas-backend-x4vs.onrender.com/api/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;
