@@ -125,6 +125,7 @@ export default function HomePageClient({
   const [announcementVisible, setAnnouncementVisible] = useState(settings.announcementEnabled);
   const [cartCount, setCartCount] = useState(0);
   const [wishlistedIds, setWishlistedIds] = useState<string[]>([]);
+  const [staticStoryOpen, setStaticStoryOpen] = useState(false);
   const wishlistCount = wishlistedIds.length;
 
   // Sync scroll state for transparent-to-white navbar effect
@@ -373,7 +374,10 @@ export default function HomePageClient({
             <p className="text-[#9E9B97] text-[15px] leading-relaxed mb-8 max-w-sm">
               Each product is hand-picked by our editorial team for exceptional craft and enduring character. No compromise, ever.
             </p>
-            <button className="self-start border border-[#C4973A] text-[#C4973A] px-8 py-3 rounded-full text-sm font-medium hover:bg-[#C4973A] hover:text-white transition-colors tracking-wide">
+            <button
+              onClick={() => setStaticStoryOpen(true)}
+              className="self-start border border-[#C4973A] text-[#C4973A] px-8 py-3 rounded-full text-sm font-medium hover:bg-[#C4973A] hover:text-white transition-colors tracking-wide cursor-pointer"
+            >
               Read the Story
             </button>
           </div>
@@ -467,6 +471,62 @@ export default function HomePageClient({
           </div>
         </div>
       </footer>
+
+      {/* Premium overlay modal for static fallback */}
+      {staticStoryOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md transition-opacity duration-300">
+          <div className="relative bg-[#0E0E0D] text-[#FAFAF9] border border-gray-800 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row min-h-[500px]">
+            {/* Split layout: Image Left */}
+            <div className="w-full md:w-1/2 relative bg-black min-h-[250px] md:min-h-full">
+              <img
+                src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=480&fit=crop&auto=format"
+                alt="Brand story banner representation"
+                className="w-full h-full object-cover opacity-80 absolute inset-0"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0E0E0D] via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:via-transparent md:to-[#0E0E0D]" />
+            </div>
+
+            {/* Split layout: Narrative Right */}
+            <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center relative text-left">
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setStaticStoryOpen(false)}
+                className="absolute top-4 right-4 text-white/50 hover:text-white hover:bg-white/10 p-2 rounded-full transition-all cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+
+              <span className="text-[#C4973A] text-[9px] tracking-[0.25em] uppercase font-bold mb-3 block">
+                The ATLAS Edit
+              </span>
+              <h3 className="font-['DM_Serif_Display'] text-2xl lg:text-3xl text-white mb-6 leading-tight">
+                Where luxury meets everyday living.
+              </h3>
+              
+              <div className="space-y-4 text-gray-300 text-xs leading-relaxed max-h-[300px] overflow-y-auto pr-2">
+                <p>
+                  We started ATLAS with a simple question: why has modern design lost its soul? In a world of mass production and planned obsolescence, we chose a different path. We chose materials that age beautifully, structural designs that endure, and partnerships with local master artisans.
+                </p>
+                <p>
+                  Every piece in our collection represents weeks of meticulous planning, sourcing, and carving. Our woods are ethically salvaged, our metals hand-welded, and our fabrics woven on heritage looms. We do not chase trends. We build icons.
+                </p>
+                <p className="font-serif text-[#C4973A] italic">
+                  Thank you for being part of our story. By inviting ATLAS into your space, you support a community of craftsmen who refuse to compromise.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setStaticStoryOpen(false)}
+                className="mt-8 bg-white text-black px-6 py-2.5 rounded-full text-xs font-semibold hover:bg-[#C4973A] hover:text-white transition-colors uppercase tracking-wider self-start cursor-pointer"
+              >
+                Close Story
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
