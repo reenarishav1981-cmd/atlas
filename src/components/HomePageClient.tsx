@@ -227,7 +227,11 @@ export default function HomePageClient({
       {hasDynamicBlocks ? (
         <>
           <Navbar cartCount={cartCount} />
-          <BlockRenderer blocks={initialBlocks} />
+          <BlockRenderer
+            blocks={initialBlocks}
+            products={initialProducts}
+            categories={initialCategories}
+          />
         </>
       ) : (
         <>

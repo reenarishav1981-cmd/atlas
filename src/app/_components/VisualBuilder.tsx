@@ -83,6 +83,41 @@ const AVAILABLE_BLOCK_TEMPLATES = [
       subtitle: "Stay updated on product launches and early sale access.",
       buttonText: "Subscribe"
     }
+  },
+  {
+    type: "categories-grid",
+    name: "Categories Showcase",
+    category: "Commerce",
+    description: "Horizontal scroll list of active categories.",
+    defaultData: { title: "Shop by Category" }
+  },
+  {
+    type: "products-grid",
+    name: "Products Showcase",
+    category: "Commerce",
+    description: "Grid of trending product catalog items.",
+    defaultData: { title: "Trending Now", limit: "4" }
+  },
+  {
+    type: "brand-story",
+    name: "Brand Story Quote",
+    category: "Content",
+    description: "Full-width quote and editorial description block.",
+    defaultData: { quote: "We did not set out to build a marketplace. We set out to build a standard.", body: "ATLAS was founded on a belief that the commerce experience itself should feel elevated." }
+  },
+  {
+    type: "reviews",
+    name: "Customer Testimonials",
+    category: "Marketing",
+    description: "Verified customer reviews cards layout.",
+    defaultData: { title: "What our customers say" }
+  },
+  {
+    type: "footer",
+    name: "Storefront Footer",
+    category: "Utility",
+    description: "Responsive footer brand metadata and copyright.",
+    defaultData: { siteName: "ATLAS", description: "Commerce, elevated. The platform for brands that refuse to compromise." }
   }
 ];
 
@@ -132,6 +167,61 @@ export default function VisualBuilder() {
         ctaPrimaryUrl: "/products"
       },
       layoutSettings: { paddingTop: "py-12", paddingBottom: "py-12", maxWidth: "container", animate: true, theme: "default" },
+      visibility: { scheduledStart: null, scheduledEnd: null, deviceVisibility: "ALL", userSegmentId: null, abTestGroup: null }
+    },
+    {
+      id: "cats-1",
+      type: "categories-grid",
+      name: "Categories Showcase",
+      isActive: true,
+      sortOrder: 2,
+      customCssClass: "",
+      content: { title: "Shop by Category" },
+      layoutSettings: { paddingTop: "py-12", paddingBottom: "py-12", maxWidth: "full-width", animate: true, theme: "default" },
+      visibility: { scheduledStart: null, scheduledEnd: null, deviceVisibility: "ALL", userSegmentId: null, abTestGroup: null }
+    },
+    {
+      id: "prods-1",
+      type: "products-grid",
+      name: "Products Showcase",
+      isActive: true,
+      sortOrder: 3,
+      customCssClass: "",
+      content: { title: "Trending Now", limit: "4" },
+      layoutSettings: { paddingTop: "py-12", paddingBottom: "py-12", maxWidth: "container", animate: true, theme: "default" },
+      visibility: { scheduledStart: null, scheduledEnd: null, deviceVisibility: "ALL", userSegmentId: null, abTestGroup: null }
+    },
+    {
+      id: "story-1",
+      type: "brand-story",
+      name: "Brand Story Quote",
+      isActive: true,
+      sortOrder: 4,
+      customCssClass: "",
+      content: { quote: "We did not set out to build a marketplace. We set out to build a standard.", body: "ATLAS was founded on a belief that the commerce experience itself should feel elevated." },
+      layoutSettings: { paddingTop: "py-16", paddingBottom: "py-16", maxWidth: "container", animate: true, theme: "default" },
+      visibility: { scheduledStart: null, scheduledEnd: null, deviceVisibility: "ALL", userSegmentId: null, abTestGroup: null }
+    },
+    {
+      id: "revs-1",
+      type: "reviews",
+      name: "Customer Testimonials",
+      isActive: true,
+      sortOrder: 5,
+      customCssClass: "",
+      content: { title: "What our customers say" },
+      layoutSettings: { paddingTop: "py-12", paddingBottom: "py-12", maxWidth: "container", animate: true, theme: "default" },
+      visibility: { scheduledStart: null, scheduledEnd: null, deviceVisibility: "ALL", userSegmentId: null, abTestGroup: null }
+    },
+    {
+      id: "foot-1",
+      type: "footer",
+      name: "Storefront Footer",
+      isActive: true,
+      sortOrder: 6,
+      customCssClass: "",
+      content: { siteName: "ATLAS", description: "Commerce, elevated. The platform for brands that refuse to compromise." },
+      layoutSettings: { paddingTop: "py-12", paddingBottom: "py-12", maxWidth: "full-width", animate: false, theme: "default" },
       visibility: { scheduledStart: null, scheduledEnd: null, deviceVisibility: "ALL", userSegmentId: null, abTestGroup: null }
     }
   ]);
@@ -882,7 +972,12 @@ export default function VisualBuilder() {
                       )}
                     </div>
                     
-                    <BlockRenderer blocks={[displayBlock]} previewMode={true} />
+                    <BlockRenderer
+                      blocks={[displayBlock]}
+                      previewMode={true}
+                      products={previewProducts}
+                      categories={previewCategories}
+                    />
                   </div>
                 );
               })}
@@ -891,62 +986,6 @@ export default function VisualBuilder() {
                   Your canvas page is empty.
                 </div>
               )}
-
-              {/* --- CMS CANVAS PREVIEW FALLBACKS FOR STOREFRONT INTEGRATION --- */}
-              {/* Categories Preview */}
-              <section className="py-12 bg-[#FAFAF9] border-t border-[#E8E6E1] opacity-75 pointer-events-none select-none">
-                <div className="px-6 mb-6">
-                  <h2 className="font-serif text-base font-semibold text-[#0E0E0D]">Shop by Category (Visual Storefront Preview)</h2>
-                </div>
-                <div className="flex gap-3 px-6 overflow-x-auto pb-2">
-                  {(previewCategories.length > 0 ? previewCategories : [
-                    { name: "Electronics", imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200" },
-                    { name: "Fashion", imageUrl: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=200" },
-                    { name: "Furniture", imageUrl: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=200" }
-                  ]).map((cat: any) => (
-                    <div key={cat.name} className="flex-none w-[130px] h-[180px] relative rounded-xl overflow-hidden bg-[#F4F3F0]">
-                      <img src={cat.imageUrl || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200"} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/40" />
-                      <div className="absolute bottom-3 left-3 text-white font-medium text-xs truncate max-w-[110px]">{cat.name}</div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              {/* Trending Products Preview */}
-              <section className="py-12 bg-white border-t border-[#E8E6E1] opacity-75 pointer-events-none select-none">
-                <div className="px-6 mb-6">
-                  <h2 className="font-serif text-base font-semibold text-[#0E0E0D]">Trending Now (Visual Storefront Preview)</h2>
-                </div>
-                <div className="px-6 grid grid-cols-2 gap-4">
-                  {(previewProducts.length > 0 ? previewProducts : [
-                    { id: "p1", name: "Meridian Chronograph", brand: { name: "Auros" }, price: 2499900, images: [{ url: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200" }] },
-                    { id: "p2", name: "Vela Tote Bag", brand: { name: "Maison Cleo" }, price: 849900, images: [{ url: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=200" }] }
-                  ]).map((p: any) => (
-                    <div key={p.id}>
-                      <div className="relative bg-gray-100 rounded-xl overflow-hidden aspect-square mb-2">
-                        <img src={p.images?.[0]?.url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30"} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="text-[9px] text-[#9E9B97] uppercase">{p.brand?.name || "ATLAS"}</div>
-                      <div className="text-[11px] font-medium text-[#0E0E0D] truncate">{p.name}</div>
-                      <div className="text-[11px] font-semibold mt-0.5">₹{(p.price / 100).toLocaleString("en-IN")}</div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              {/* Brand Story Preview */}
-              <section className="py-12 bg-gray-50 border-t border-[#E8E6E1] text-center px-6 opacity-75 pointer-events-none select-none">
-                <blockquote className="font-serif text-sm text-[#0E0E0D] italic mb-2">
-                  "We did not set out to build a marketplace. We set out to build a standard."
-                </blockquote>
-              </section>
-
-              {/* Footer Preview */}
-              <footer className="bg-[#0E0E0D] text-[#FAFAF9] px-6 py-10 opacity-75 pointer-events-none select-none border-t border-[#E8E6E1]">
-                <div className="font-serif text-sm text-white mb-2">ATLAS</div>
-                <p className="text-[#6B6966] text-[10px]">Commerce, elevated. Live storefront preview footer.</p>
-              </footer>
             </div>
           </div>
         </div>

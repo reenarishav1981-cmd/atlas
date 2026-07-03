@@ -16,9 +16,16 @@ const LazyCustomHtmlBlock = dynamic(() => import("./blocks/CustomHtmlBlock"));
 interface BlockRendererProps {
   blocks: BlockInstance[];
   previewMode?: boolean;
+  products?: any[];
+  categories?: any[];
 }
 
-export default function BlockRenderer({ blocks, previewMode = false }: BlockRendererProps) {
+export default function BlockRenderer({
+  blocks,
+  previewMode = false,
+  products = [],
+  categories = [],
+}: BlockRendererProps) {
   // Memoize validation filtering for active sections and display schedules
   const activeBlocks = useMemo(() => {
     const now = new Date();
@@ -121,6 +128,120 @@ export default function BlockRenderer({ blocks, previewMode = false }: BlockRend
 
       case "spacer":
         return <div key={block.id} className={`${block.content.height ?? "h-8"} ${block.customCssClass ?? ""}`} />;
+
+      case "categories-grid": {
+        const cats = categories.length > 0 ? categories : [
+          { name: "Electronics", imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=280", slug: "electronics" },
+          { name: "Fashion", imageUrl: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=280", slug: "fashion" }
+        ];
+        return (
+          <section key={block.id} className="py-12 bg-[#FAFAF9] border-t border-[#E8E6E1]">
+            <div className="px-8 lg:px-16 mb-8">
+              <h2 className="font-['DM_Serif_Display'] text-2xl lg:text-3xl text-[#0E0E0D]">{block.content.title || "Shop by Category"}</h2>
+            </div>
+            <div className="flex gap-4 px-8 lg:px-16 overflow-x-auto pb-4" style={{ scrollbarWidth: "none" }}>
+              {cats.map((cat: any) => (
+                <div key={cat.name} className="flex-none w-[200px] h-[270px] relative rounded-2xl overflow-hidden bg-[#F4F3F0]">
+                  <img src={cat.imageUrl || cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <div className="text-white font-medium text-sm">{cat.name}</div>
+                    <div className="text-white/60 text-[10px] mt-0.5">Explore &rarr;</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      }
+
+      case "products-grid": {
+        const items = products.length > 0 ? products : [
+          { id: "1", name: "Meridian Chronograph", brand: "Auros", price: 24999, image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200", slug: "meridian-chronograph" },
+          { id: "2", name: "Vela Tote Bag", brand: "Maison Cleo", price: 8499, image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=200", slug: "vela-tote-bag" }
+        ];
+        const limitCount = Math.max(1, Number(block.content.limit || 4));
+        return (
+          <section key={block.id} className="py-12 bg-white border-t border-[#E8E6E1]">
+            <div className="px-8 lg:px-16 mb-8">
+              <h2 className="font-['DM_Serif_Display'] text-2xl lg:text-3xl text-[#0E0E0D]">{block.content.title || "Trending Now"}</h2>
+            </div>
+            <div className="px-8 lg:px-16 grid grid-cols-2 lg:grid-cols-4 gap-6">
+              {items.slice(0, limitCount).map((product: any) => (
+                <div key={product.id} className="group">
+                  <div className="relative bg-[#F4F3F0] rounded-2xl overflow-hidden aspect-square mb-3">
+                    <img src={product.image || product.images?.[0]?.url} alt={product.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="text-[9px] text-[#9E9B97] font-medium uppercase tracking-wider mb-0.5">{product.brand || product.brand?.name || "ATLAS"}</div>
+                  <div className="text-xs font-medium text-[#0E0E0D] truncate leading-snug">{product.name}</div>
+                  <div className="text-xs font-semibold text-[#0E0E0D] mt-1">
+                    ₹{((product.price || 0) / (product.price > 10000 ? 100 : 1)).toLocaleString("en-IN")}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      }
+
+      case "brand-story":
+        return (
+          <section key={block.id} className="py-16 bg-white text-center px-8 border-t border-[#E8E6E1]">
+            <div className="max-w-2xl mx-auto">
+              <div className="w-8 h-px bg-[#C4973A] mx-auto mb-8" />
+              <blockquote className="font-['DM_Serif_Display'] text-2xl lg:text-3xl text-[#0E0E0D] leading-snug mb-6 italic">
+                "{block.content.quote}"
+              </blockquote>
+              <p className="text-[#6B6966] text-xs leading-relaxed max-w-md mx-auto">
+                {block.content.body}
+              </p>
+              <div className="w-8 h-px bg-[#C4973A] mx-auto mt-8" />
+            </div>
+          </section>
+        );
+
+      case "reviews": {
+        const REVIEWS = [
+          { name: "Priya S.", location: "Mumbai", text: "The quality exceeded every expectation. ATLAS curates with such precision.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=60", product: "Meridian Chronograph" },
+          { name: "Rahul M.", location: "Bangalore", text: "Seamless experience from browse to delivery. Genuinely premium.", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60", product: "Studio Headphones MX7" }
+        ];
+        return (
+          <section key={block.id} className="py-12 bg-[#FAFAF9] border-t border-[#E8E6E1]">
+            <div className="px-8 lg:px-16 mb-8 text-center">
+              <h2 className="font-['DM_Serif_Display'] text-2xl lg:text-3xl text-[#0E0E0D]">{block.content.title || "What our customers say"}</h2>
+            </div>
+            <div className="px-8 lg:px-16 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {REVIEWS.map((r, i) => (
+                <div key={i} className="bg-white rounded-2xl p-6 border border-[#E8E6E1]">
+                  <p className="text-[#0E0E0D] text-xs leading-relaxed mb-4">"{r.text}"</p>
+                  <div className="flex items-center gap-2 pt-4 border-t border-[#F4F3F0]">
+                    <img src={r.avatar} alt={r.name} className="w-8 h-8 rounded-full object-cover" />
+                    <div>
+                      <div className="text-xs font-medium text-[#0E0E0D]">{r.name}</div>
+                      <div className="text-[9px] text-[#9E9B97]">{r.location} · {r.product}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      }
+
+      case "footer":
+        return (
+          <footer key={block.id} className="bg-[#0E0E0D] text-[#FAFAF9] border-t border-gray-800 py-12 px-8">
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+              <div>
+                <div className="font-['DM_Serif_Display'] text-xl text-white mb-2">{block.content.siteName || "ATLAS"}</div>
+                <p className="text-[#6B6966] text-xs leading-relaxed max-w-sm">{block.content.description}</p>
+              </div>
+              <div className="text-[10px] text-[#6B6966] md:text-right">
+                &copy; {new Date().getFullYear()} {block.content.siteName || "ATLAS"}. All rights reserved.
+              </div>
+            </div>
+          </footer>
+        );
 
       default:
         return (
