@@ -132,6 +132,16 @@ const AVAILABLE_BLOCK_TEMPLATES = [
       ctaText: "Read the Story",
       ctaUrl: "/products"
     }
+  },
+  {
+    type: "instagram-gallery",
+    name: "Instagram Showcase",
+    category: "Marketing",
+    description: "Grid of static Instagram lifestyle images.",
+    defaultData: {
+      handle: "@atlascommerce",
+      title: "Follow the edit"
+    }
   }
 ];
 
@@ -235,11 +245,25 @@ export default function VisualBuilder() {
       visibility: { scheduledStart: null, scheduledEnd: null, deviceVisibility: "ALL", userSegmentId: null, abTestGroup: null }
     },
     {
+      id: "insta-1",
+      type: "instagram-gallery",
+      name: "Instagram Showcase",
+      isActive: true,
+      sortOrder: 6,
+      customCssClass: "",
+      content: {
+        handle: "@atlascommerce",
+        title: "Follow the edit"
+      },
+      layoutSettings: { paddingTop: "py-12", paddingBottom: "py-12", maxWidth: "full-width", animate: true, theme: "default" },
+      visibility: { scheduledStart: null, scheduledEnd: null, deviceVisibility: "ALL", userSegmentId: null, abTestGroup: null }
+    },
+    {
       id: "revs-1",
       type: "reviews",
       name: "Customer Testimonials",
       isActive: true,
-      sortOrder: 6,
+      sortOrder: 7,
       customCssClass: "",
       content: { title: "What our customers say" },
       layoutSettings: { paddingTop: "py-12", paddingBottom: "py-12", maxWidth: "container", animate: true, theme: "default" },
@@ -250,7 +274,7 @@ export default function VisualBuilder() {
       type: "footer",
       name: "Storefront Footer",
       isActive: true,
-      sortOrder: 7,
+      sortOrder: 8,
       customCssClass: "",
       content: { siteName: "ATLAS", description: "Commerce, elevated. The platform for brands that refuse to compromise." },
       layoutSettings: { paddingTop: "py-12", paddingBottom: "py-12", maxWidth: "full-width", animate: false, theme: "default" },
@@ -352,8 +376,60 @@ export default function VisualBuilder() {
         if (data.page && data.page.content) {
           const loadedBlocks = data.page.content as BlockInstance[];
           if (loadedBlocks.length > 0) {
-            setBlocks(loadedBlocks);
-            setHistory([loadedBlocks]);
+            // Smart Layout Auto-Merge: Append any missing default block components at their natural positions
+            const defaultTemplateBlocks = [
+              { id: "ann-1", type: "announcement", name: "Header Announcement", content: { text: "Free shipping on orders above ₹999 · Custom styling live now", bgColor: "#0A0A09", textColor: "#FFFFFF" } },
+              { id: "hero-1", type: "hero", name: "Main Banner Hero", content: { badgeText: "Crafted with Precision", headingLine1: "Design. Elevated.", headingLine2: "Built to Last.", subtitle: "Authentic wood carvings and custom frames. Perfect addition to modern living spaces.", imageUrl: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=900", ctaPrimaryText: "Shop Collection", ctaPrimaryUrl: "/products" } },
+              { id: "cats-1", type: "categories-grid", name: "Categories Showcase", content: { title: "Shop by Category" } },
+              { id: "prods-1", type: "products-grid", name: "Products Showcase", content: { title: "Trending Now", limit: "4" } },
+              { id: "editorial-1", type: "editorial-banner", name: "Editorial Story Banner", content: { badgeText: "The ATLAS Edit", title: "Where luxury meets everyday living.", description: "Each product is hand-picked by our editorial team for exceptional craft and enduring character. No compromise, ever.", imageUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=480&fit=crop&auto=format", ctaText: "Read the Story", ctaUrl: "/products" } },
+              { id: "story-1", type: "brand-story", name: "Brand Story Quote", content: { quote: "We did not set out to build a marketplace. We set out to build a standard.", body: "ATLAS was founded on a belief that the commerce experience itself should feel elevated." } },
+              { id: "insta-1", type: "instagram-gallery", name: "Instagram Showcase", content: { handle: "@atlascommerce", title: "Follow the edit" } },
+              { id: "revs-1", type: "reviews", name: "Customer Testimonials", content: { title: "What our customers say" } },
+              { id: "foot-1", type: "footer", name: "Storefront Footer", content: { siteName: "ATLAS", description: "Commerce, elevated. The platform for brands that refuse to compromise." } }
+            ];
+
+            const merged = [...loadedBlocks];
+            defaultTemplateBlocks.forEach((defBlock) => {
+              const exists = merged.some((b) => b.type === defBlock.type);
+              if (!exists) {
+                const blockToAdd: BlockInstance = {
+                  id: defBlock.id,
+                  type: defBlock.type,
+                  name: defBlock.name,
+                  isActive: true,
+                  sortOrder: merged.length,
+                  customCssClass: "",
+                  content: defBlock.content,
+                  layoutSettings: { paddingTop: "py-12", paddingBottom: "py-12", maxWidth: "container", animate: true, theme: "default" },
+                  visibility: { scheduledStart: null, scheduledEnd: null, deviceVisibility: "ALL", userSegmentId: null, abTestGroup: null }
+                };
+                if (defBlock.type === "announcement") {
+                  blockToAdd.layoutSettings = { paddingTop: "py-2", paddingBottom: "py-2", maxWidth: "full-width", animate: false, theme: "default" };
+                } else if (defBlock.type === "footer" || defBlock.type === "categories-grid" || defBlock.type === "instagram-gallery") {
+                  blockToAdd.layoutSettings = { paddingTop: "py-12", paddingBottom: "py-12", maxWidth: "full-width", animate: true, theme: "default" };
+                } else if (defBlock.type === "editorial-banner") {
+                  blockToAdd.layoutSettings = { paddingTop: "py-0", paddingBottom: "py-0", maxWidth: "full-width", animate: true, theme: "default" };
+                }
+                merged.push(blockToAdd);
+              }
+            });
+
+            // Natural standard order of structural blocks
+            const naturalOrder = ["announcement", "hero", "categories-grid", "products-grid", "editorial-banner", "brand-story", "instagram-gallery", "reviews", "footer"];
+            merged.sort((a, b) => {
+              const indexA = naturalOrder.indexOf(a.type);
+              const indexB = naturalOrder.indexOf(b.type);
+              if (indexA !== -1 && indexB !== -1) {
+                return indexA - indexB;
+              }
+              return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+            });
+
+            const finalized = merged.map((b, i) => ({ ...b, sortOrder: i }));
+
+            setBlocks(finalized);
+            setHistory([finalized]);
             setHistoryIndex(0);
           }
           if (data.page.versions && data.page.versions.length > 0) {

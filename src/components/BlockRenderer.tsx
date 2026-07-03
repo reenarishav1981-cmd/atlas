@@ -232,6 +232,32 @@ export default function BlockRenderer({
         );
       }
 
+      case "instagram-gallery": {
+        const photos = block.content.images || [
+          "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=300&h=300&fit=crop&auto=format",
+          "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=300&h=300&fit=crop&auto=format",
+          "https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=300&h=300&fit=crop&auto=format",
+          "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=300&h=300&fit=crop&auto=format",
+          "https://images.unsplash.com/photo-1556742393-d75f468bfcb0?w=300&h=300&fit=crop&auto=format",
+          "https://images.unsplash.com/photo-1513094735237-8f2714d57c13?w=300&h=300&fit=crop&auto=format"
+        ];
+        return (
+          <section key={block.id} className="py-16 bg-white border-t border-[#E8E6E1]">
+            <div className="text-center mb-8">
+              <div className="text-xs text-[#6B6966] font-medium">{block.content.handle || "@atlascommerce"}</div>
+              <h2 className="font-['DM_Serif_Display'] text-2xl text-[#0E0E0D] mt-1">{block.content.title || "Follow the edit"}</h2>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-px mb-8">
+              {photos.map((photo: string, i: number) => (
+                <div key={i} className="relative aspect-square overflow-hidden group bg-[#F4F3F0]">
+                  <img src={photo} alt={`Instagram photo ${i + 1}`} className="w-full h-full object-cover" />
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      }
+
       case "footer":
         return (
           <footer key={block.id} className="bg-[#0E0E0D] text-[#FAFAF9] border-t border-gray-800 py-12 px-8">
