@@ -15,6 +15,7 @@ import {
   Star,
   Search,
   SlidersHorizontal,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
@@ -73,6 +74,7 @@ export default function CategoryPageClient({
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [cartCount, setCartCount] = useState(0);
   const [wishlistedIds, setWishlistedIds] = useState<string[]>([]);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Sync URL search query ?q= and ?category= on mount
   useEffect(() => {
@@ -224,7 +226,7 @@ export default function CategoryPageClient({
       <div className="flex">
         {/* Sidebar */}
         <aside
-          className="w-[280px] min-h-[calc(100vh-72px)] bg-white border-r border-[#E8E6E1] sticky top-[72px] h-[calc(100vh-72px)] overflow-y-auto px-6 py-8 flex-none"
+          className="w-[280px] min-h-[calc(100vh-72px)] bg-white border-r border-[#E8E6E1] sticky top-[72px] h-[calc(100vh-72px)] overflow-y-auto px-6 py-8 flex-none hidden lg:block"
           style={{ scrollbarWidth: "none" }}
         >
           <div className="flex items-center justify-between mb-8">
@@ -398,7 +400,13 @@ export default function CategoryPageClient({
                 <ChevronRight size={11} />
                 <span className="text-[#0E0E0D]">Shop</span>
               </div>
-              <div className="flex gap-1">
+              <div className="flex gap-1 items-center">
+                <button
+                  onClick={() => setIsMobileFilterOpen(true)}
+                  className="lg:hidden h-8 px-3 rounded-lg border border-[#E8E6E1] text-[#6B6966] flex items-center gap-1.5 text-xs hover:border-[#0E0E0D] hover:text-[#0E0E0D] transition-all cursor-pointer mr-1"
+                >
+                  <Filter size={12} className="text-[#C4973A]" /> Filter
+                </button>
                 {(["grid", "list"] as const).map((m) => (
                   <button
                     key={m}
@@ -602,6 +610,134 @@ export default function CategoryPageClient({
           </div>
         </main>
       </div>
+
+      {/* Mobile Drawer Slide-out Sheet */}
+      {isMobileFilterOpen && (
+        <div className="fixed inset-0 z-[9999] lg:hidden bg-black/60 backdrop-blur-sm flex justify-end">
+          <div className="w-[300px] h-full bg-white p-6 overflow-y-auto flex flex-col shadow-2xl relative">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#F4F3F0]">
+              <span className="font-semibold text-sm text-[#0E0E0D]">Filters & Sorting</span>
+              <button onClick={() => setIsMobileFilterOpen(false)} className="text-gray-400 hover:text-black cursor-pointer">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="flex-1 space-y-6 overflow-y-auto pr-1" style={{ scrollbarWidth: "none" }}>
+              {/* Price Range */}
+              <div>
+                <span className="block text-xs font-semibold uppercase tracking-wider text-[#0E0E0D] mb-3">Price Range</span>
+                <div className="flex justify-between text-xs text-[#6B6966] mb-2">
+                  <span>₹0</span>
+                  <span className="font-semibold text-[#0E0E0D]">₹{priceMax.toLocaleString("en-IN")}</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={50000}
+                  step={500}
+                  value={priceMax}
+                  onChange={(e) => setPriceMax(+e.target.value)}
+                  className="w-full accent-[#C4973A]"
+                />
+              </div>
+
+              {/* Brand */}
+              <div>
+                <span className="block text-xs font-semibold uppercase tracking-wider text-[#0E0E0D] mb-3">Brand</span>
+                <div className="space-y-2.5">
+                  {Object.entries(brandCounts).map(([brand, count]) => (
+                    <label key={brand} className="flex items-center justify-between cursor-pointer group">
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          onClick={() =>
+                            setSelectedBrands((prev) =>
+                              prev.includes(brand)
+                                ? prev.filter((b) => b !== brand)
+                                : [...prev, brand]
+                            )
+                          }
+                          className={`w-4 h-4 rounded border flex items-center justify-center transition-colors flex-none ${
+                            selectedBrands.includes(brand)
+                              ? "bg-[#0E0E0D] border-[#0E0E0D]"
+                              : "border-[#E8E6E1]"
+                          }`}
+                        >
+                          {selectedBrands.includes(brand) && (
+                            <Check size={10} className="text-white" />
+                          )}
+                        </button>
+                        <span className="text-xs text-[#6B6966]">{brand}</span>
+                      </div>
+                      <span className="text-[10px] bg-[#F4F3F0] text-[#6B6966] px-1.5 py-0.5 rounded-full">{count}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Rating */}
+              <div>
+                <span className="block text-xs font-semibold uppercase tracking-wider text-[#0E0E0D] mb-3">Minimum Rating</span>
+                <div className="space-y-2">
+                  {[4, 3, 2].map((r) => (
+                    <button
+                      key={r}
+                      onClick={() => setMinRating(minRating === r ? null : r)}
+                      className={`flex items-center gap-2.5 w-full py-1.5 px-2 rounded-lg transition-colors text-left ${
+                        minRating === r ? "bg-[#F4F3F0] text-[#0E0E0D]" : "text-[#6B6966]"
+                      }`}
+                    >
+                      <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center flex-none ${minRating === r ? "border-[#C4973A]" : "border-[#E8E6E1]"}`}>
+                        {minRating === r && <div className="w-1.5 h-1.5 rounded-full bg-[#C4973A]" />}
+                      </div>
+                      <Stars rating={r} size={11} />
+                      <span className="text-xs font-medium">& up</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Stock */}
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#0E0E0D]">In Stock Only</span>
+                <button
+                  onClick={() => setInStock((v) => !v)}
+                  className={`w-10 h-5 rounded-full relative transition-colors ${
+                    inStock ? "bg-[#0E0E0D]" : "bg-[#E8E6E1]"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                      inStock ? "translate-x-5" : "translate-x-0.5"
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-[#F4F3F0] mt-6 flex gap-3">
+              <button
+                onClick={() => {
+                  setSelectedBrands([]);
+                  setPriceMax(50000);
+                  setInStock(false);
+                  setMinRating(null);
+                  setActiveCategory("All");
+                  setSearchQuery("");
+                }}
+                className="flex-1 py-3 border border-[#E8E6E1] rounded-xl text-xs font-medium text-[#6B6966] cursor-pointer"
+              >
+                Reset All
+              </button>
+              <button
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="flex-1 py-3 bg-[#0E0E0D] text-white rounded-xl text-xs font-semibold cursor-pointer hover:bg-[#C4973A] transition-colors"
+              >
+                Apply Filters
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
