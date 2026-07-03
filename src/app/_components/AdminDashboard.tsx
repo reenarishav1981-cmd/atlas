@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import {
   LayoutDashboard, BarChart2, ShoppingCart, Package, Boxes, Users, Tag,
   Megaphone, Star, FileText, Globe, DollarSign, Settings, Activity,
-  LogOut, Bell, Calendar, AlertTriangle, Zap, Loader2,
+  LogOut, Bell, Calendar, AlertTriangle, Zap, Loader2, Menu, X,
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -698,6 +698,7 @@ function ComingSoon({ label }: { label: string }) {
 // ── Main ────────────────────────────────────────────────────────────────────
 export default function AdminDashboard() {
   const [activeItem, setActiveItem] = useState("Dashboard");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const renderSection = () => {
     switch (activeItem) {
@@ -717,11 +718,27 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-[#F4F3F0] overflow-hidden">
-      <aside className="w-[240px] bg-[#0A0A09] flex flex-col h-full overflow-hidden">
-        <div className="px-5 py-5 border-b border-[#1a1a18] flex-none">
-          <div className="text-xl text-white">ATLAS</div>
-          <div className="text-[10px] text-[#3a3a37] mt-0.5 tracking-wider uppercase">Commerce OS</div>
+    <div className="flex h-screen bg-[#F4F3F0] overflow-hidden relative">
+      {/* Mobile Sidebar overlay backdrop */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden cursor-pointer"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      <aside className={`fixed inset-y-0 left-0 z-50 w-[240px] bg-[#0A0A09] flex flex-col h-full overflow-hidden transition-transform duration-300 lg:static lg:translate-x-0 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="px-5 py-5 border-b border-[#1a1a18] flex-none flex items-center justify-between">
+          <div>
+            <div className="text-xl text-white">ATLAS</div>
+            <div className="text-[10px] text-[#3a3a37] mt-0.5 tracking-wider uppercase">Commerce OS</div>
+          </div>
+          <button 
+            onClick={() => setIsSidebarOpen(false)}
+            className="lg:hidden text-gray-400 hover:text-white cursor-pointer"
+          >
+            <X size={16} />
+          </button>
         </div>
         <nav className="flex-1 py-4 px-3 overflow-y-auto">
           {ADMIN_NAV_ITEMS.map(({ section, items }) => (
@@ -730,7 +747,10 @@ export default function AdminDashboard() {
               {items.map(({ icon: Icon, label }) => (
                 <button
                   key={label}
-                  onClick={() => setActiveItem(label)}
+                  onClick={() => {
+                    setActiveItem(label);
+                    setIsSidebarOpen(false); // Close sidebar on mobile item click
+                  }}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] mb-0.5 transition-all ${activeItem === label ? "bg-[#1c1c1a] text-white" : "text-[#5a5a57] hover:bg-[#141413] hover:text-[#9E9B97]"}`}
                 >
                   <Icon size={14} />
@@ -749,17 +769,23 @@ export default function AdminDashboard() {
       </aside>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="h-[60px] bg-white border-b border-[#E8E6E1] flex items-center px-8 gap-4 flex-none">
-          <h1 className="font-medium flex-1">{activeItem}</h1>
+        <div className="h-[60px] bg-white border-b border-[#E8E6E1] flex items-center px-4 lg:px-8 gap-3 lg:gap-4 flex-none">
+          <button 
+            onClick={() => setIsSidebarOpen(true)}
+            className="lg:hidden w-8 h-8 border border-[#E8E6E1] rounded-xl flex items-center justify-center cursor-pointer flex-none"
+          >
+            <Menu size={15} className="text-[#6B6966]" />
+          </button>
+          <h1 className="font-medium flex-1 text-sm lg:text-base truncate">{activeItem}</h1>
           <VoiceAssistant onNavigate={setActiveItem} />
-          <div className="flex items-center gap-2 border border-[#E8E6E1] rounded-xl px-3 py-1.5 text-sm text-[#6B6966]">
+          <div className="hidden sm:flex items-center gap-2 border border-[#E8E6E1] rounded-xl px-3 py-1.5 text-sm text-[#6B6966]">
             <Calendar size={13} /> Last 30 days
           </div>
           <button className="relative w-8 h-8 border border-[#E8E6E1] rounded-xl flex items-center justify-center">
             <Bell size={15} className="text-[#6B6966]" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-8">{renderSection()}</div>
+        <div className="flex-1 overflow-y-auto p-4 lg:p-8">{renderSection()}</div>
       </div>
     </div>
   );
