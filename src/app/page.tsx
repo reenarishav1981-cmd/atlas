@@ -3,21 +3,26 @@ import HomePageClient from "@/components/HomePageClient";
 import { getCurrentUser } from "@/lib/auth";
 import { getSiteSettings } from "@/lib/settings";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 15;
 
 export default async function HomePage() {
-  // Fetch active products with images, brand, and category from Postgres
-  const dbProducts = await db.product.findMany({
-    where: { isActive: true },
-    include: {
-      images: { orderBy: { position: "asc" } },
-      brand: true,
-      category: true,
-    },
-    orderBy: { createdAt: "desc" },
-  });
-
-  const categories = await db.category.findMany({});
+  // Fetch site data in parallel to avoid database query cascading and latency waterfall
+  const [dbProducts, categories, settings, cmsPage] = await Promise.all([
+    db.product.findMany({
+      where: { isActive: true },
+      include: {
+        images: { orderBy: { position: "asc" } },
+        brand: true,
+        category: true,
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    db.category.findMany({}),
+    getSiteSettings(),
+    db.cmsPage.findUnique({
+      where: { slug: "home" },
+    }),
+  ]);
 
   // Transform products from DB schema to expected React UI schema
   const products = dbProducts.map((p) => ({
@@ -39,14 +44,6 @@ export default async function HomePage() {
     image: c.imageUrl || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=280&h=360&fit=crop&auto=format",
   }));
 
-  const user = await getCurrentUser();
-  const settings = await getSiteSettings();
-
-  // Load published homepage blocks from Postgres
-  const cmsPage = await db.cmsPage.findUnique({
-    where: { slug: "home" },
-  });
-
   const initialBlocks = cmsPage?.status === "PUBLISHED" && Array.isArray(cmsPage.content)
     ? cmsPage.content
     : [];
@@ -55,7 +52,7 @@ export default async function HomePage() {
     <HomePageClient
       initialProducts={products as any}
       initialCategories={transformedCategories}
-      currentUser={user as any}
+      currentUser={null}
       siteSettings={settings as any}
       initialBlocks={initialBlocks as any}
     />

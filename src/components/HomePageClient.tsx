@@ -126,6 +126,7 @@ export default function HomePageClient({
   const [cartCount, setCartCount] = useState(0);
   const [wishlistedIds, setWishlistedIds] = useState<string[]>([]);
   const [staticStoryOpen, setStaticStoryOpen] = useState(false);
+  const [user, setUser] = useState<UserProps | null>(currentUser ?? null);
   const wishlistCount = wishlistedIds.length;
 
   // Sync scroll state for transparent-to-white navbar effect
@@ -157,8 +158,18 @@ export default function HomePageClient({
         }
       } catch (err) {}
     }
+    async function fetchUser() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.user) setUser(data.user);
+        }
+      } catch (err) {}
+    }
     fetchCart();
     fetchWishlist();
+    fetchUser();
   }, []);
 
   const handleToggleWishlist = async (product: Product) => {
@@ -254,9 +265,9 @@ export default function HomePageClient({
           {/* Hero Section */}
           <section className="relative flex min-h-[80vh] overflow-hidden bg-white">
             <div className="w-full lg:w-[55%] flex flex-col justify-center px-8 lg:px-16 py-20 z-10">
-              {currentUser ? (
+              {user ? (
                 <span className="text-[11px] text-[#C4973A] font-semibold tracking-[0.18em] uppercase mb-6">
-                  Welcome back, {currentUser.name}
+                  Welcome back, {user.name}
                 </span>
               ) : (
                 <span className="text-[11px] text-[#C4973A] font-medium tracking-[0.18em] uppercase mb-6">
