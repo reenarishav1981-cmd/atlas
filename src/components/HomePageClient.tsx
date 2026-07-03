@@ -219,72 +219,75 @@ export default function HomePageClient({
     }
   };
 
-  if (initialBlocks && initialBlocks.length > 0) {
-    return (
-      <div className="min-h-screen bg-[#FAFAF9]">
-        <Navbar cartCount={cartCount} />
-        <BlockRenderer blocks={initialBlocks} />
-      </div>
-    );
-  }
+  const hasDynamicBlocks = initialBlocks && initialBlocks.length > 0;
 
   return (
     <div className="min-h-screen bg-[#FAFAF9]">
-      {/* Announcement Bar */}
-      {announcementVisible && (
-        <div className="h-10 bg-[#0E0E0D] flex items-center justify-center relative px-12 z-50">
-          <span className="text-white text-[11px] tracking-widest uppercase text-center">
-            {settings.announcementText}
-          </span>
-          <button onClick={() => setAnnouncementVisible(false)} className="absolute right-5 text-white/40 hover:text-white transition-colors">
-            <X size={14} />
-          </button>
-        </div>
-      )}
-
-      {/* Navbar */}
-      <Navbar cartCount={cartCount} />
-
-      {/* Hero Section */}
-      <section className="relative flex min-h-[80vh] overflow-hidden bg-white">
-        <div className="w-full lg:w-[55%] flex flex-col justify-center px-8 lg:px-16 py-20 z-10">
-          {currentUser ? (
-            <span className="text-[11px] text-[#C4973A] font-semibold tracking-[0.18em] uppercase mb-6">
-              Welcome back, {currentUser.name}
-            </span>
-          ) : (
-            <span className="text-[11px] text-[#C4973A] font-medium tracking-[0.18em] uppercase mb-6">
-              {settings.heroBadgeText}
-            </span>
+      {/* Announcement Bar & Hero / Dynamic Blocks */}
+      {hasDynamicBlocks ? (
+        <>
+          <Navbar cartCount={cartCount} />
+          <BlockRenderer blocks={initialBlocks} />
+        </>
+      ) : (
+        <>
+          {/* Announcement Bar */}
+          {announcementVisible && (
+            <div className="h-10 bg-[#0E0E0D] flex items-center justify-center relative px-12 z-50">
+              <span className="text-white text-[11px] tracking-widest uppercase text-center">
+                {settings.announcementText}
+              </span>
+              <button onClick={() => setAnnouncementVisible(false)} className="absolute right-5 text-white/40 hover:text-white transition-colors">
+                <X size={14} />
+              </button>
+            </div>
           )}
-          <h1 className="font-['DM_Serif_Display'] text-[50px] lg:text-[78px] leading-[1.0] text-[#0E0E0D] mb-6">
-            {settings.heroHeadingLine1}<br /><span className="italic">{settings.heroHeadingLine2}</span>
-          </h1>
-          <p className="text-[15px] lg:text-[17px] text-[#6B6966] max-w-md leading-relaxed mb-10">
-            {settings.heroSubtitle}
-          </p>
-          <div className="flex items-center gap-4">
-            <button onClick={() => {
-              const el = document.getElementById("trending");
-              el?.scrollIntoView({ behavior: "smooth" });
-            }} className="bg-[#0E0E0D] text-white px-8 py-3.5 rounded-full text-sm font-medium hover:bg-[#C4973A] transition-colors tracking-wide">
-              {settings.heroCtaPrimaryText}
-            </button>
-            <button className="group flex items-center gap-2.5 border border-[#0E0E0D] text-[#0E0E0D] px-8 py-3.5 rounded-full text-sm font-medium hover:bg-[#0E0E0D] hover:text-white transition-colors tracking-wide">
-              <Play size={13} className="fill-current" />
-              {settings.heroCtaSecondaryText}
-            </button>
-          </div>
-        </div>
-        <div className="hidden lg:block lg:w-[45%] relative bg-[#F4F3F0]">
-          <img src={settings.heroImageUrl} alt="ATLAS hero banner" className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute bottom-14 right-12 bg-white/90 backdrop-blur-md px-6 py-4 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
-            <div className="text-[10px] text-[#9E9B97] tracking-wider uppercase mb-1">New Arrival</div>
-            <div className="font-['DM_Serif_Display'] text-lg text-[#0E0E0D]">Summer Edit 2026</div>
-            <div className="text-sm text-[#C4973A] font-medium mt-1">From ₹2,499</div>
-          </div>
-        </div>
-      </section>
+
+          {/* Navbar */}
+          <Navbar cartCount={cartCount} />
+
+          {/* Hero Section */}
+          <section className="relative flex min-h-[80vh] overflow-hidden bg-white">
+            <div className="w-full lg:w-[55%] flex flex-col justify-center px-8 lg:px-16 py-20 z-10">
+              {currentUser ? (
+                <span className="text-[11px] text-[#C4973A] font-semibold tracking-[0.18em] uppercase mb-6">
+                  Welcome back, {currentUser.name}
+                </span>
+              ) : (
+                <span className="text-[11px] text-[#C4973A] font-medium tracking-[0.18em] uppercase mb-6">
+                  {settings.heroBadgeText}
+                </span>
+              )}
+              <h1 className="font-['DM_Serif_Display'] text-[50px] lg:text-[78px] leading-[1.0] text-[#0E0E0D] mb-6">
+                {settings.heroHeadingLine1}<br /><span className="italic">{settings.heroHeadingLine2}</span>
+              </h1>
+              <p className="text-[15px] lg:text-[17px] text-[#6B6966] max-w-md leading-relaxed mb-10">
+                {settings.heroSubtitle}
+              </p>
+              <div className="flex items-center gap-4">
+                <button onClick={() => {
+                  const el = document.getElementById("trending");
+                  el?.scrollIntoView({ behavior: "smooth" });
+                }} className="bg-[#0E0E0D] text-white px-8 py-3.5 rounded-full text-sm font-medium hover:bg-[#C4973A] transition-colors tracking-wide">
+                  {settings.heroCtaPrimaryText}
+                </button>
+                <button className="group flex items-center gap-2.5 border border-[#0E0E0D] text-[#0E0E0D] px-8 py-3.5 rounded-full text-sm font-medium hover:bg-[#0E0E0D] hover:text-white transition-colors tracking-wide">
+                  <Play size={13} className="fill-current" />
+                  {settings.heroCtaSecondaryText}
+                </button>
+              </div>
+            </div>
+            <div className="hidden lg:block lg:w-[45%] relative bg-[#F4F3F0]">
+              <img src={settings.heroImageUrl} alt="ATLAS hero banner" className="absolute inset-0 w-full h-full object-cover" />
+              <div className="absolute bottom-14 right-12 bg-white/90 backdrop-blur-md px-6 py-4 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
+                <div className="text-[10px] text-[#9E9B97] tracking-wider uppercase mb-1">New Arrival</div>
+                <div className="font-['DM_Serif_Display'] text-lg text-[#0E0E0D]">Summer Edit 2026</div>
+                <div className="text-sm text-[#C4973A] font-medium mt-1">From ₹2,499</div>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
 
       {/* Featured Categories */}
       <section className="py-20 bg-[#FAFAF9]">
