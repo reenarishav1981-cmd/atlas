@@ -129,6 +129,41 @@ export default function BlockRenderer({
       case "spacer":
         return <div key={block.id} className={`${block.content.height ?? "h-8"} ${block.customCssClass ?? ""}`} />;
 
+      case "editorial-banner":
+        return (
+          <section key={block.id} className="bg-[#0A0A09] overflow-hidden border-t border-[#E8E6E1]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[440px]">
+              <div className="relative bg-[#0A0A09]">
+                <img
+                  src={block.content.imageUrl || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800"}
+                  alt={block.content.title}
+                  className="w-full h-full object-cover opacity-75"
+                />
+              </div>
+              <div className="flex flex-col justify-center px-8 lg:px-20 py-12 text-left">
+                <span className="text-[#C4973A] text-[10px] tracking-[0.2em] uppercase font-semibold mb-4">
+                  {block.content.badgeText || "The ATLAS Edit"}
+                </span>
+                <h2 className="font-['DM_Serif_Display'] text-2xl lg:text-[40px] text-white leading-tight mb-4">
+                  {block.content.title}
+                </h2>
+                <p className="text-[#9E9B97] text-xs leading-relaxed mb-6 max-w-sm">
+                  {block.content.description}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.location.href = block.content.ctaUrl || "/products";
+                  }}
+                  className="self-start border border-[#C4973A] text-[#C4973A] px-6 py-2.5 rounded-full text-xs font-semibold hover:bg-[#C4973A] hover:text-white transition-colors tracking-wider uppercase cursor-pointer"
+                >
+                  {block.content.ctaText || "Read the Story"}
+                </button>
+              </div>
+            </div>
+          </section>
+        );
+
       case "categories-grid": {
         const cats = categories.length > 0 ? categories : [
           { name: "Electronics", imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=280", slug: "electronics" },

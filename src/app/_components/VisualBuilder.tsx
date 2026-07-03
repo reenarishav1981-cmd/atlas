@@ -118,6 +118,20 @@ const AVAILABLE_BLOCK_TEMPLATES = [
     category: "Utility",
     description: "Responsive footer brand metadata and copyright.",
     defaultData: { siteName: "ATLAS", description: "Commerce, elevated. The platform for brands that refuse to compromise." }
+  },
+  {
+    type: "editorial-banner",
+    name: "Editorial Story Banner",
+    category: "Content",
+    description: "Premium split editorial block with image, description, and link.",
+    defaultData: {
+      badgeText: "The ATLAS Edit",
+      title: "Where luxury meets everyday living.",
+      description: "Each product is hand-picked by our editorial team for exceptional craft and enduring character. No compromise, ever.",
+      imageUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=480&fit=crop&auto=format",
+      ctaText: "Read the Story",
+      ctaUrl: "/products"
+    }
   }
 ];
 
@@ -192,11 +206,29 @@ export default function VisualBuilder() {
       visibility: { scheduledStart: null, scheduledEnd: null, deviceVisibility: "ALL", userSegmentId: null, abTestGroup: null }
     },
     {
+      id: "editorial-1",
+      type: "editorial-banner",
+      name: "Editorial Story Banner",
+      isActive: true,
+      sortOrder: 4,
+      customCssClass: "",
+      content: {
+        badgeText: "The ATLAS Edit",
+        title: "Where luxury meets everyday living.",
+        description: "Each product is hand-picked by our editorial team for exceptional craft and enduring character. No compromise, ever.",
+        imageUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=480&fit=crop&auto=format",
+        ctaText: "Read the Story",
+        ctaUrl: "/products"
+      },
+      layoutSettings: { paddingTop: "py-0", paddingBottom: "py-0", maxWidth: "full-width", animate: true, theme: "default" },
+      visibility: { scheduledStart: null, scheduledEnd: null, deviceVisibility: "ALL", userSegmentId: null, abTestGroup: null }
+    },
+    {
       id: "story-1",
       type: "brand-story",
       name: "Brand Story Quote",
       isActive: true,
-      sortOrder: 4,
+      sortOrder: 5,
       customCssClass: "",
       content: { quote: "We did not set out to build a marketplace. We set out to build a standard.", body: "ATLAS was founded on a belief that the commerce experience itself should feel elevated." },
       layoutSettings: { paddingTop: "py-16", paddingBottom: "py-16", maxWidth: "container", animate: true, theme: "default" },
@@ -207,7 +239,7 @@ export default function VisualBuilder() {
       type: "reviews",
       name: "Customer Testimonials",
       isActive: true,
-      sortOrder: 5,
+      sortOrder: 6,
       customCssClass: "",
       content: { title: "What our customers say" },
       layoutSettings: { paddingTop: "py-12", paddingBottom: "py-12", maxWidth: "container", animate: true, theme: "default" },
@@ -218,7 +250,7 @@ export default function VisualBuilder() {
       type: "footer",
       name: "Storefront Footer",
       isActive: true,
-      sortOrder: 6,
+      sortOrder: 7,
       customCssClass: "",
       content: { siteName: "ATLAS", description: "Commerce, elevated. The platform for brands that refuse to compromise." },
       layoutSettings: { paddingTop: "py-12", paddingBottom: "py-12", maxWidth: "full-width", animate: false, theme: "default" },
