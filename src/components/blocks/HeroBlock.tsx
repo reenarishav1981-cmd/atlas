@@ -68,7 +68,7 @@ export default function HeroBlock({
         </div>
       </div>
       <div className="lg:col-span-6">
-        <div className="relative aspect-[4/5] rounded-3xl overflow-hidden border border-gray-100 shadow-xl">
+        <div className="relative aspect-square lg:aspect-[4/3] rounded-3xl overflow-hidden border border-gray-100 shadow-xl">
           <img
             src={imageUrl}
             alt="Hero Banner Illustration"
