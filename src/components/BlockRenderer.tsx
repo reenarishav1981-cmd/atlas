@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import { X } from "lucide-react";
 import { BlockInstance } from "@/lib/types/blocks";
 
 // Lazy-load heavier components to optimize initial bundle size & Core Web Vitals
@@ -130,39 +131,7 @@ export default function BlockRenderer({
         return <div key={block.id} className={`${block.content.height ?? "h-8"} ${block.customCssClass ?? ""}`} />;
 
       case "editorial-banner":
-        return (
-          <section key={block.id} className="bg-[#0A0A09] overflow-hidden border-t border-[#E8E6E1]">
-            <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[440px]">
-              <div className="relative bg-[#0A0A09]">
-                <img
-                  src={block.content.imageUrl || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800"}
-                  alt={block.content.title}
-                  className="w-full h-full object-cover opacity-75"
-                />
-              </div>
-              <div className="flex flex-col justify-center px-8 lg:px-20 py-12 text-left">
-                <span className="text-[#C4973A] text-[10px] tracking-[0.2em] uppercase font-semibold mb-4">
-                  {block.content.badgeText || "The ATLAS Edit"}
-                </span>
-                <h2 className="font-['DM_Serif_Display'] text-2xl lg:text-[40px] text-white leading-tight mb-4">
-                  {block.content.title}
-                </h2>
-                <p className="text-[#9E9B97] text-xs leading-relaxed mb-6 max-w-sm">
-                  {block.content.description}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    window.location.href = block.content.ctaUrl || "/products";
-                  }}
-                  className="self-start border border-[#C4973A] text-[#C4973A] px-6 py-2.5 rounded-full text-xs font-semibold hover:bg-[#C4973A] hover:text-white transition-colors tracking-wider uppercase cursor-pointer"
-                >
-                  {block.content.ctaText || "Read the Story"}
-                </button>
-              </div>
-            </div>
-          </section>
-        );
+        return <EditorialBannerBlock key={block.id} block={block} />;
 
       case "categories-grid": {
         const cats = categories.length > 0 ? categories : [
@@ -288,4 +257,98 @@ export default function BlockRenderer({
   };
 
   return <div className="w-full flex flex-col">{activeBlocks.map(renderBlock)}</div>;
+}
+
+function EditorialBannerBlock({ block }: { block: any }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <section className="bg-[#0A0A09] overflow-hidden border-t border-[#E8E6E1]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[440px]">
+          <div className="relative bg-[#0A0A09]">
+            <img
+              src={block.content.imageUrl || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800"}
+              alt={block.content.title}
+              className="w-full h-full object-cover opacity-75"
+            />
+          </div>
+          <div className="flex flex-col justify-center px-8 lg:px-20 py-12 text-left">
+            <span className="text-[#C4973A] text-[10px] tracking-[0.2em] uppercase font-semibold mb-4">
+              {block.content.badgeText || "The ATLAS Edit"}
+            </span>
+            <h2 className="font-['DM_Serif_Display'] text-2xl lg:text-[40px] text-white leading-tight mb-4">
+              {block.content.title}
+            </h2>
+            <p className="text-[#9E9B97] text-xs leading-relaxed mb-6 max-w-sm">
+              {block.content.description}
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsOpen(true)}
+              className="self-start border border-[#C4973A] text-[#C4973A] px-6 py-2.5 rounded-full text-xs font-semibold hover:bg-[#C4973A] hover:text-white transition-colors tracking-wider uppercase cursor-pointer"
+            >
+              {block.content.ctaText || "Read the Story"}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Premium overlay modal */}
+      {isOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md transition-opacity duration-300">
+          <div className="relative bg-[#0E0E0D] text-[#FAFAF9] border border-gray-800 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row min-h-[500px]">
+            {/* Split layout: Image Left */}
+            <div className="w-full md:w-1/2 relative bg-black min-h-[250px] md:min-h-full">
+              <img
+                src={block.content.imageUrl || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800"}
+                alt="Brand story banner representation"
+                className="w-full h-full object-cover opacity-80 absolute inset-0"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0E0E0D] via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:via-transparent md:to-[#0E0E0D]" />
+            </div>
+
+            {/* Split layout: Narrative Right */}
+            <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center relative">
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="absolute top-4 right-4 text-white/50 hover:text-white hover:bg-white/10 p-2 rounded-full transition-all cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+
+              <span className="text-[#C4973A] text-[9px] tracking-[0.25em] uppercase font-bold mb-3 block">
+                {block.content.badgeText || "The ATLAS Edit"}
+              </span>
+              <h3 className="font-['DM_Serif_Display'] text-2xl lg:text-3xl text-white mb-6 leading-tight">
+                {block.content.title}
+              </h3>
+              
+              <div className="space-y-4 text-gray-300 text-xs leading-relaxed max-h-[300px] overflow-y-auto pr-2">
+                <p>
+                  We started ATLAS with a simple question: why has modern design lost its soul? In a world of mass production and planned obsolescence, we chose a different path. We chose materials that age beautifully, structural designs that endure, and partnerships with local master artisans.
+                </p>
+                <p>
+                  Every piece in our collection represents weeks of meticulous planning, sourcing, and carving. Our woods are ethically salvaged, our metals hand-welded, and our fabrics woven on heritage looms. We do not chase trends. We build icons.
+                </p>
+                <p className="font-serif text-[#C4973A] italic">
+                  Thank you for being part of our story. By inviting ATLAS into your space, you support a community of craftsmen who refuse to compromise.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="mt-8 bg-white text-black px-6 py-2.5 rounded-full text-xs font-semibold hover:bg-[#C4973A] hover:text-white transition-colors uppercase tracking-wider self-start cursor-pointer"
+              >
+                Close Story
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
